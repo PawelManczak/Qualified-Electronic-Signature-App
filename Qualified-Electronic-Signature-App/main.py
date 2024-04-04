@@ -7,24 +7,26 @@ from time import sleep
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import pkcs12
 
-CLIENT_CERT_KEY = "1234"
-
+CLIENT_CERT_KEY = "12345"
 
 def load_private_key_from_pfx(external_drive_path):
     pfx_file_path = os.path.join(external_drive_path, "certificate.pfx")
     with open(pfx_file_path, "rb") as f:
-        private_key, certificate, additional_certificates = serialization.pkcs12.load_key_and_certificates(
-            f.read(), CLIENT_CERT_KEY.encode()
-        )
+        try:
+            private_key, certificate, additional_certificates = serialization.pkcs12.load_key_and_certificates(
+                f.read(), CLIENT_CERT_KEY.encode()
+            )
 
-    # Konwersja klucza prywatnego do formatu PEM
-    private_key_pem = private_key.private_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PrivateFormat.PKCS8,
-        encryption_algorithm=serialization.NoEncryption()
-    )
+            private_key_pem = private_key.private_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PrivateFormat.PKCS8,
+                encryption_algorithm=serialization.NoEncryption()
+            )
 
-    return private_key_pem.decode()
+            return private_key_pem.decode()
+        except ValueError:
+            print("Incorrect password for private key.")
+            return None
 
 
 def check_external_drive(callback):
@@ -51,7 +53,8 @@ def main():
     def on_external_drive_change(external_drive_path):
         print("Detected change in external drive:", external_drive_path)
         private_key = load_private_key_from_pfx(external_drive_path)
-        print("Private key from PFX file:", private_key)
+        if private_key is not None:
+            print("Private key from PFX file:", private_key)
 
     try:
         check_external_drive(on_external_drive_change)
