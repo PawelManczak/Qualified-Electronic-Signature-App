@@ -3,11 +3,12 @@ import re
 import sys
 from subprocess import Popen, PIPE
 from time import sleep
-
+import tkinter as tk
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import pkcs12
 
-CLIENT_CERT_KEY = "12345"
+CLIENT_CERT_KEY = "1234"
+
 
 def load_private_key_from_pfx(external_drive_path):
     pfx_file_path = os.path.join(external_drive_path, "certificate.pfx")
@@ -29,37 +30,45 @@ def load_private_key_from_pfx(external_drive_path):
             return None
 
 
-def check_external_drive(callback):
+def check_external_drive():
     DISKUTIL = ["/usr/sbin/diskutil", "activity"]
 
-    while True:
-        with Popen(DISKUTIL, stdout=PIPE, encoding="UTF-8") as diskutil:
-            # Detect the first subsequent "Disk Appeared" event
-            for line in diskutil.stdout:
-                if line.startswith("***DiskAppeared"):
-                    match = re.search(r"DAVolumeName = '([^']+)'", line)
-
-                    if match:
-                        volume_name = match.group(1)
-                        external_drive_path = f"/Volumes/{volume_name}/"
-                        sleep(5)
-                        callback(external_drive_path)
-
-                    break
-                sleep(5)
+    with Popen(DISKUTIL, stdout=PIPE, encoding="UTF-8") as diskutil:
+        for line in diskutil.stdout:
+            if line.startswith("***DiskAppeared"):
+                match = re.search(r"DAVolumeName = '([^']+)'", line)
+                if match:
+                    volume_name = match.group(1)
+                    print(volume_name)
+                    if "<null>" in volume_name:
+                        print("123")
+                        return None
+                    external_drive_path = f"/Volumes/{volume_name}/"
+                    return external_drive_path
+    return None
 
 
 def main():
-    def on_external_drive_change(external_drive_path):
-        print("Detected change in external drive:", external_drive_path)
-        private_key = load_private_key_from_pfx(external_drive_path)
-        if private_key is not None:
-            print("Private key from PFX file:", private_key)
+    root = tk.Tk()
+    root.title("Pendrive Detector")
 
-    try:
-        check_external_drive(on_external_drive_change)
-    except KeyboardInterrupt:
-        sys.exit(1)
+    label = tk.Label(root, text="Czekam na podłączenie pendrive'a...")
+    label.pack()
+
+    def update_label():
+        external_drive_path = check_external_drive()
+        if external_drive_path is not None:
+            label.config(text=f"Pendrive path: {external_drive_path}")
+            private_key = load_private_key_from_pfx(external_drive_path)
+            if private_key is not None:
+                label.config(text=f"Pendrive with secret in: {external_drive_path}")
+        else:
+            label.config(text="Waiting for pendrive...")
+
+        root.after(5000, update_label)
+
+    update_label()
+    root.mainloop()
 
 
 if __name__ == "__main__":
