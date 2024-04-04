@@ -1,6 +1,7 @@
 import os
 
 from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.serialization import pkcs12
 
 
 def load_public_key_from_pem(cert_path):
@@ -25,6 +26,18 @@ def load_private_key_from_pem(external_drive_path, password):
                 password.encode()
             )
             return public_key
+        except ValueError:
+            print("Incorrect password for private key.")
+            return None
+
+def load_private_key_from_pfx(external_drive_path, password):
+    pfx_file_path = os.path.join(external_drive_path, "certificate.pfx")
+    with open(pfx_file_path, "rb") as f:
+        try:
+            private_key, certificate, additional_certificates = serialization.pkcs12.load_key_and_certificates(
+                f.read(), password.encode()
+            )
+            return private_key, certificate.public_key()
         except ValueError:
             print("Incorrect password for private key.")
             return None

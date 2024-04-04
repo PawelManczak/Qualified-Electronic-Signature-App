@@ -1,51 +1,13 @@
 import os
-import re
 import tkinter as tk
-from subprocess import Popen, PIPE
 from tkinter import filedialog
 
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.serialization import pkcs12
-
+from check_external_drive import check_external_drive
 from load_keys import load_public_key_from_pem, load_private_key_from_pem
-from verify_signature import verify_signature
 from sign_pdf_with_private_key import create_xml_signature
+from verify_signature import verify_signature
 
 CLIENT_CERT_KEY = "1234"
-
-
-def load_private_key_from_pfx(external_drive_path):
-    pfx_file_path = os.path.join(external_drive_path, "certificate.pfx")
-    with open(pfx_file_path, "rb") as f:
-        try:
-            private_key, certificate, additional_certificates = serialization.pkcs12.load_key_and_certificates(
-                f.read(), CLIENT_CERT_KEY.encode()
-            )
-            return private_key, certificate.public_key()
-        except ValueError:
-            print("Incorrect password for private key.")
-            return None
-
-
-def check_external_drive():
-    DISKUTIL = ["/usr/sbin/diskutil", "activity"]
-
-    with Popen(DISKUTIL, stdout=PIPE, encoding="UTF-8") as diskutil:
-        for line in diskutil.stdout:
-            if line.startswith("***DiskAppeared"):
-                match = re.search(r"DAVolumeName = '([^']+)'", line)
-                if match:
-                    volume_name = match.group(1)
-                    print(volume_name)
-                    if "<null>" in volume_name:
-                        print("not found")
-                        return None
-                    external_drive_path = f"/Volumes/{volume_name}/"
-                    return external_drive_path
-    return None
-
-
-
 
 
 def main():
@@ -70,8 +32,8 @@ def main():
                     create_xml_signature("/Users/pawelmanczak/PG sem 6/BSK/___.pdf", private_key)
 
                     verify_signature("/Users/pawelmanczak/PG sem 6/BSK/___.pdf",
-                                                     "/Users/pawelmanczak/PG sem 6/BSK/____signature.xml",
-                                                     public_key=public_key)
+                                     "/Users/pawelmanczak/PG sem 6/BSK/____signature.xml",
+                                     public_key=public_key)
                     label.config(text=f"PDF signed successfully: {os.path.basename(file_path)}")
 
             else:
