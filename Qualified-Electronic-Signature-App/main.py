@@ -4,20 +4,42 @@ import sys
 from subprocess import Popen, PIPE
 from time import sleep
 
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.serialization import pkcs12
+
+CLIENT_CERT_KEY = "1234"
+
+
+def load_private_key_from_pfx(external_drive_path):
+    pfx_file_path = os.path.join(external_drive_path, "certificate.pfx")
+    with open(pfx_file_path, "rb") as f:
+        private_key, certificate, additional_certificates = serialization.pkcs12.load_key_and_certificates(
+            f.read(), CLIENT_CERT_KEY.encode()
+        )
+
+    # Konwersja klucza prywatnego do formatu PEM
+    private_key_pem = private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption()
+    )
+
+    return private_key_pem.decode()
+
 
 def check_external_drive(callback):
-    DISKUTIL = ['/usr/sbin/diskutil', 'activity']
+    DISKUTIL = ["/usr/sbin/diskutil", "activity"]
 
     while True:
-        with Popen(DISKUTIL, stdout=PIPE, encoding='UTF-8') as diskutil:
+        with Popen(DISKUTIL, stdout=PIPE, encoding="UTF-8") as diskutil:
             # Detect the first subsequent "Disk Appeared" event
             for line in diskutil.stdout:
-                if line.startswith('***DiskAppeared'):
+                if line.startswith("***DiskAppeared"):
                     match = re.search(r"DAVolumeName = '([^']+)'", line)
 
                     if match:
                         volume_name = match.group(1)
-                        external_drive_path = f'/Volumes/{volume_name}/'
+                        external_drive_path = f"/Volumes/{volume_name}/"
                         sleep(5)
                         callback(external_drive_path)
 
@@ -28,13 +50,8 @@ def check_external_drive(callback):
 def main():
     def on_external_drive_change(external_drive_path):
         print("Detected change in external drive:", external_drive_path)
-
-        if os.path.exists(external_drive_path):
-            files = os.listdir(external_drive_path)
-            print("Files on the external drive:")
-            for file in files:
-                print(file)
-        # Do something with the external drive path
+        private_key = load_private_key_from_pfx(external_drive_path)
+        print("Private key from PFX file:", private_key)
 
     try:
         check_external_drive(on_external_drive_change)
