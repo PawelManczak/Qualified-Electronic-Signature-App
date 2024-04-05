@@ -1,9 +1,58 @@
 import datetime
 import os
+import tkinter as tk
 import xml.etree.ElementTree as ET
+from tkinter import filedialog
 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
+
+from load_keys import load_private_key_from_pem
+
+
+def sign(private_key_path):
+    password_dialog = tk.Toplevel()
+    password_dialog.title("Enter Password")
+
+    password_label = tk.Label(password_dialog, text="Enter password:")
+    password_label.pack()
+
+    password_entry = tk.Entry(password_dialog, show="*")
+    password_entry.pack()
+
+    result_label = tk.Label(password_dialog, text="")
+    result_label.pack()
+
+    def sign_with_password():
+        password = password_entry.get()
+
+        private_key = load_private_key_from_pem(private_key_path, password)
+
+        if private_key is not None:
+
+            file_path = filedialog.askopenfilename(title="Select file to sign",
+                                                   filetypes=(("PDF files", "*.pdf"), ("all files", "*.*")))
+            if file_path:
+                result = create_xml_signature(file_path, private_key)
+                if result:
+                    result_label.config(text="File signed successfully")
+
+                    def close():
+                        password_dialog.destroy()
+
+                    close_button = tk.Button(password_dialog, text="close", command=close)
+                    close_button.pack()
+                else:
+                    result_label.config(text="Failed to sign!")
+            else:
+                result_label.config(text="No file selected")
+        else:
+            result_label.config(text="Incorrect password or private key not found.")
+
+    sign_button = tk.Button(password_dialog, text="Sign", command=sign_with_password)
+    sign_button.pack()
+
+    password_dialog.mainloop()
 
 
 def create_xml_signature(document_path, private_key):
@@ -45,4 +94,3 @@ def create_xml_signature(document_path, private_key):
     xml_tree.write(xml_signature_path)
 
     return xml_signature_path
-

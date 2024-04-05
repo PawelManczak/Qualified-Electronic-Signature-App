@@ -1,7 +1,47 @@
+import tkinter as tk
+from tkinter import filedialog
+
+from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import padding, hashes
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+
+
+def encrypt():
+    encrypt_dialog = tk.Toplevel()
+    encrypt_dialog.title("Enter key")
+
+    encrypt_label = tk.Label(encrypt_dialog, text="Enter key for enctyption:")
+    encrypt_label.pack()
+
+    encrypt_entry = tk.Entry(encrypt_dialog)
+    encrypt_entry.pack()
+
+    result_label = tk.Label(encrypt_dialog, text="")
+    result_label.pack()
+
+    def encrypt_with_key():
+        key = encrypt_entry.get()
+
+        if len(key) == 0:
+            result_label.config(text="Key cannot be empty")
+        else:
+            file_path = filedialog.askopenfilename(title="Select file to encrypt", filetypes=(("All files", "*.*"),))
+
+            encrypt_file(file_path, key)
+
+            result_label.config(text="File encrypted successfully")
+
+            def close():
+                encrypt_dialog.destroy()
+
+            close_button = tk.Button(encrypt_dialog, text="close", command=close)
+            close_button.pack()
+
+    sign_button = tk.Button(encrypt_dialog, text="Encrypt", command=encrypt_with_key)
+    sign_button.pack()
+
+    encrypt_dialog.mainloop()
 
 
 def encrypt_file(file_path, s_key):

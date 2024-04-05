@@ -1,7 +1,17 @@
 import xml.etree.ElementTree as ET
+from tkinter import filedialog
 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
+
+
+def verify(public_key):
+    original_file = filedialog.askopenfilename(title="Select file",
+                                               filetypes=(("PDF files", "*.pdf"), ("all files", "*.*")))
+    signature = filedialog.askopenfilename(title="Select signature of original file",
+                                           filetypes=(("XML files", "*.xml"), ("all files", "*.*")))
+
+    return verify_signature(original_file, signature, public_key)
 
 
 def verify_signature(file_path, xml_path, public_key):

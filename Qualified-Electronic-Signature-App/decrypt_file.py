@@ -1,12 +1,51 @@
+import tkinter as tk
+from tkinter import filedialog
+
+from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.backends import default_backend
 
 from encrypt_file import generate_aes_key
 
 
-def decrypt_file(encrypted_file_path, s_key):
+def decrypt():
+    decrypt_dialog = tk.Toplevel()
+    decrypt_dialog.title("Enter key")
 
+    decrypt_label = tk.Label(decrypt_dialog, text="Enter key for decryption:")
+    decrypt_label.pack()
+
+    decrypt_entry = tk.Entry(decrypt_dialog)
+    decrypt_entry.pack()
+
+    result_label = tk.Label(decrypt_dialog, text="")
+    result_label.pack()
+
+    def decrypt_with_key():
+        key = decrypt_entry.get()
+
+        if len(key) == 0:
+            result_label.config(text="Key cannot be empty")
+        else:
+            file_path = filedialog.askopenfilename(title="Select file to decrypt", filetypes=(("All files", "*.*"),))
+
+            decrypt_file(file_path, key)
+
+            result_label.config(text="File decrypted successfully")
+
+            def close():
+                decrypt_dialog.destroy()
+
+            close_button = tk.Button(decrypt_dialog, text="close", command=close)
+            close_button.pack()
+
+    sign_button = tk.Button(decrypt_dialog, text="Decrypt", command=decrypt_with_key)
+    sign_button.pack()
+
+    decrypt_dialog.mainloop()
+
+
+def decrypt_file(encrypted_file_path, s_key):
     key = generate_aes_key(s_key, 32)
     # Read the content of the encrypted file
     with open(encrypted_file_path, 'rb') as encrypted_file:
