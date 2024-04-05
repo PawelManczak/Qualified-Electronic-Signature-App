@@ -33,7 +33,7 @@ def main():
     root.title("PDF Signer")
     external_drive_path = check_external_drive()
 
-    private_key = load_private_key_from_pem(external_drive_path, CLIENT_CERT_KEY)
+    private_key = None
     public_key = load_public_key_from_pem("/Users/pawelmanczak/PG sem 6/BSK/public_key.pem")
 
     label = tk.Label(root, text="Waiting for pendrive...")
@@ -63,17 +63,21 @@ def main():
     verify_button.pack()
 
     def update_usb_stick_status():
-        nonlocal external_drive_path
-        external_drive_path = str(check_external_drive())
-        if external_drive_path is not None:
-            label.config(text=f"Pendrive path: {external_drive_path}")
+        nonlocal external_drive_path, private_key
 
+        external_drive_path = check_external_drive()
+        if external_drive_path is not None:
+            label.config(text=f"Pendrive path: {str(external_drive_path)}")
+            private_key = load_private_key_from_pem(str(external_drive_path), CLIENT_CERT_KEY)
             if private_key is not None:
-                label.config(text=f"Pendrive with private key in: {external_drive_path}")
+                label.config(text=f"Pendrive with private key in: {str(external_drive_path)}")
+                sign_button.config(state=tk.NORMAL)
             else:
                 label.config(text="Private key not found on the pendrive.")
+                sign_button.config(state=tk.DISABLED)
         else:
             label.config(text="Waiting for pendrive...")
+            sign_button.config(state=tk.DISABLED)
 
         root.after(5000, update_usb_stick_status)
 
