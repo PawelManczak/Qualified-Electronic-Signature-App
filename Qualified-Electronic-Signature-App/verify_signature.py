@@ -23,5 +23,7 @@ def verify_signature(pdf_path, xml_path, public_key):
             hashes.SHA256()
         )
         print("Signature verified successfully.")
+        return True
     except Exception:
         print("Invalid signature.")
+        return False
