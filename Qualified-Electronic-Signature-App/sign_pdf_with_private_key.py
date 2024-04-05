@@ -46,6 +46,3 @@ def create_xml_signature(document_path, private_key):
 
     return xml_signature_path
 
-# Example usage:
-# private_key = load_private_key()  # Load or generate private key for User A
-# xml_signature_path = create_xml_signature("document.pdf", private_key, "1234")  # Create XML signature for the document

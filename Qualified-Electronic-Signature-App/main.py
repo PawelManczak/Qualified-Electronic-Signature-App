@@ -6,10 +6,10 @@ from load_keys import load_public_key_from_pem, load_private_key_from_pem, check
 from sign_pdf_with_private_key import create_xml_signature
 from verify_signature import verify_signature
 
-CLIENT_CERT_KEY = "1234"
+# CLIENT_CERT_KEY = "1234"
 
 
-def sign_pdf(private_key_path):
+def sign(private_key_path):
     password_dialog = tk.Toplevel()
     password_dialog.title("Enter Password")
 
@@ -29,12 +29,12 @@ def sign_pdf(private_key_path):
 
         if private_key is not None:
 
-            file_path = filedialog.askopenfilename(title="Select PDF file to sign",
+            file_path = filedialog.askopenfilename(title="Select file to sign",
                                                    filetypes=(("PDF files", "*.pdf"), ("all files", "*.*")))
             if file_path:
                 result = create_xml_signature(file_path, private_key)
                 if result:
-                    result_label.config(text="PDF signed successfully")
+                    result_label.config(text="File signed successfully")
 
                     def close():
                         password_dialog.destroy()
@@ -42,7 +42,7 @@ def sign_pdf(private_key_path):
                     close_button = tk.Button(password_dialog, text="close", command=close)
                     close_button.pack()
                 else:
-                    result_label.config(text="Failed to sign PDF!")
+                    result_label.config(text="Failed to sign!")
             else:
                 result_label.config(text="No file selected")
         else:
@@ -54,8 +54,8 @@ def sign_pdf(private_key_path):
     password_dialog.mainloop()
 
 
-def verify_pdf(public_key):
-    original_file = filedialog.askopenfilename(title="Select pdf",
+def verify(public_key):
+    original_file = filedialog.askopenfilename(title="Select file",
                                                filetypes=(("PDF files", "*.pdf"), ("all files", "*.*")))
     signature = filedialog.askopenfilename(title="Select signature of original file",
                                            filetypes=(("XML files", "*.xml"), ("all files", "*.*")))
@@ -65,7 +65,7 @@ def verify_pdf(public_key):
 
 def main():
     root = tk.Tk()
-    root.title("PDF Signer")
+    root.title("File Signer")
     external_drive_path = check_external_drive()
 
     is_private_key_present = False
@@ -78,24 +78,20 @@ def main():
     result_label.pack()
 
     def update_sign_label():
-        sign_pdf(external_drive_path)
+        sign(external_drive_path)
         print("RESUL SIGNA: " + str("!@3"))
-        # if result:
-        #   result_label.config(text=f"PDF signed successfully")
-        # else:
-        #   result_label.config(text="Failed to sign PDF!")
 
-    sign_button = tk.Button(root, text="Sign PDF", command=update_sign_label)
+    sign_button = tk.Button(root, text="Sign File", command=update_sign_label)
     sign_button.pack()
 
     def update_verify_label():
-        result = verify_pdf(public_key)
+        result = verify(public_key)
         if result:
-            result_label.config(text=f"PDF verified successfully")
+            result_label.config(text=f"File verified successfully")
         else:
-            result_label.config(text="Failed to verified PDF!")
+            result_label.config(text="Failed to verified file!")
 
-    verify_button = tk.Button(root, text="Verify PDF", command=update_verify_label)
+    verify_button = tk.Button(root, text="Verify file", command=update_verify_label)
     verify_button.pack()
 
     def update_usb_stick_status():
