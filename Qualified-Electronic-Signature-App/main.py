@@ -2,11 +2,86 @@ import tkinter as tk
 from tkinter import filedialog
 
 from check_external_drive import check_external_drive
+from decrypt_file import decrypt_file
+from encrypt_file import encrypt_file
 from load_keys import load_public_key_from_pem, load_private_key_from_pem, check_private_key_file_exists
 from sign_pdf_with_private_key import create_xml_signature
 from verify_signature import verify_signature
 
+
 # CLIENT_CERT_KEY = "1234"
+
+def encrypt():
+    encrypt_dialog = tk.Toplevel()
+    encrypt_dialog.title("Enter key")
+
+    encrypt_label = tk.Label(encrypt_dialog, text="Enter key for enctyption:")
+    encrypt_label.pack()
+
+    encrypt_entry = tk.Entry(encrypt_dialog)
+    encrypt_entry.pack()
+
+    result_label = tk.Label(encrypt_dialog, text="")
+    result_label.pack()
+
+    def encrypt_with_key():
+        key = encrypt_entry.get()
+
+        if len(key) == 0:
+            result_label.config(text="Key cannot be empty")
+        else:
+            file_path = filedialog.askopenfilename(title="Select file to encrypt", filetypes=(("All files", "*.*"),))
+
+            encrypt_file(file_path, key)
+
+            result_label.config(text="File encrypted successfully")
+
+            def close():
+                encrypt_dialog.destroy()
+
+            close_button = tk.Button(encrypt_dialog, text="close", command=close)
+            close_button.pack()
+
+    sign_button = tk.Button(encrypt_dialog, text="Encrypt", command=encrypt_with_key)
+    sign_button.pack()
+
+    encrypt_dialog.mainloop()
+
+def decrypt():
+    decrypt_dialog = tk.Toplevel()
+    decrypt_dialog.title("Enter key")
+
+    decrypt_label = tk.Label(decrypt_dialog, text="Enter key for decryption:")
+    decrypt_label.pack()
+
+    decrypt_entry = tk.Entry(decrypt_dialog)
+    decrypt_entry.pack()
+
+    result_label = tk.Label(decrypt_dialog, text="")
+    result_label.pack()
+
+    def decrypt_with_key():
+        key = decrypt_entry.get()
+
+        if len(key) == 0:
+            result_label.config(text="Key cannot be empty")
+        else:
+            file_path = filedialog.askopenfilename(title="Select file to decrypt", filetypes=(("All files", "*.*"),))
+
+            decrypt_file(file_path, key)
+
+            result_label.config(text="File decrypted successfully")
+
+            def close():
+                decrypt_dialog.destroy()
+
+            close_button = tk.Button(decrypt_dialog, text="close", command=close)
+            close_button.pack()
+
+    sign_button = tk.Button(decrypt_dialog, text="Decrypt", command=decrypt_with_key)
+    sign_button.pack()
+
+    decrypt_dialog.mainloop()
 
 
 def sign(private_key_path):
@@ -79,7 +154,6 @@ def main():
 
     def update_sign_label():
         sign(external_drive_path)
-        print("RESUL SIGNA: " + str("!@3"))
 
     sign_button = tk.Button(root, text="Sign File", command=update_sign_label)
     sign_button.pack()
@@ -93,6 +167,12 @@ def main():
 
     verify_button = tk.Button(root, text="Verify file", command=update_verify_label)
     verify_button.pack()
+
+    encrypt_button = tk.Button(root, text="Encrypt File", command=encrypt)
+    encrypt_button.pack()
+
+    decrypt_button = tk.Button(root, text="Decrypt File", command=decrypt)
+    decrypt_button.pack()
 
     def update_usb_stick_status():
         nonlocal external_drive_path, is_private_key_present
