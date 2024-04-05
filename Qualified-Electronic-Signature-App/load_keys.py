@@ -30,6 +30,14 @@ def load_private_key_from_pem(external_drive_path, password):
             print("Incorrect password for private key.")
             return None
 
+
+def check_private_key_file_exists(external_drive_path):
+    file_path = os.path.join(external_drive_path, "private_key.pem")
+    print(file_path)
+    print(os.path.exists(file_path))
+    return os.path.exists(file_path)
+
+
 def load_private_key_from_pfx(external_drive_path, password):
     pfx_file_path = os.path.join(external_drive_path, "certificate.pfx")
     with open(pfx_file_path, "rb") as f:
