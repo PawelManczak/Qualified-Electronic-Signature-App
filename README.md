@@ -13,3 +13,8 @@ Features:
 - Basic encryption and decryption using RSA keys.
 - GUI interface supporting file selection for signing and encryption/decryption.
 - Messages for application status indication.
+
+Commands to generate keys:
+
+To generate 4096 RSA key:
+'''openssl genpkey -algorithm RSA -out private_key.pem -aes256'''
