@@ -17,4 +17,13 @@ Features:
 Commands to generate keys:
 
 To generate 4096 RSA key:
-'''openssl genpkey -algorithm RSA -out private_key.pem -aes256'''
+
+```openssl genpkey -algorithm RSA -out private_key.pem -aes256```
+
+To generate public key:
+
+```openssl req -new -x509 -key private_key.pem -out public_cert.pem```
+
+To generate .pfx cerificate:
+
+```openssl pkcs12 -export -in public_cert.pem -inkey private_key.pem -out certificate.pfx```
